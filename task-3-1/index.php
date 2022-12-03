@@ -1,14 +1,10 @@
 <?php
 include "src/functions.php";
 // 1.
-$users = [];
-$names = ["Anton", "Genadiy", "Sergey", "Andrey", "Vitaliy"];
+const NAMES = ["Anton", "Genadiy", "Sergey", "Andrey", "Vitaliy"];
+
 for ($i = 0; $i <= 50; $i++) {
-    $users[] = [
-        'id' => 1,
-        'name' => $names[array_rand($names)],
-        'age' => random_int(18, 45)
-    ];
+    $users[] = createUser();
 }
 fileWrite(json_encode($users), 'users.json');
 

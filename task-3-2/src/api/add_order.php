@@ -1,52 +1,31 @@
 <?php
-include '../../class/Db.php';
+include '../../class/Burger.php';
 
-$db = Db::getInstance();
-$queryUser = "SELECT * FROM `users` WHERE `email` = :user_email";
-$ret = $db->fetchOne($queryUser, [':user_email' => $_GET['email']], __FILE__);
+$burger = new Burger();
 
-if (!$ret) {
-    $queryUserAdd = "INSERT INTO `users` (`name`, `email`, `phone`, `street`, `house`, `frame`, `apartment`, `floor`) 
-    VALUES (:user_name, :user_email, :user_phone, :user_street, :user_house, :user_frame, :user_apartment, :user_floor)";
-    $userId = $db->exec($queryUserAdd, [
-        ':user_name' => $_GET['name'] ?? '',
-        ':user_email' => $_GET['email'] ?? '',
-        ':user_phone' => $_GET['phone'] ?? '',
-        ':user_street' => $_GET['street'] ?? '',
-        ':user_house' => $_GET['house'] ?? '',
-        ':user_frame' => $_GET['frame'] ?? null,
-        ':user_apartment' => $_GET['apartment'] ?? '',
-        ':user_floor' => $_GET['floor'] ?? null,
-    ], __FILE__);
+$user = $burger->getUserByEmail($_GET['email']);
 
-    $queryUser = "SELECT * FROM `users` WHERE `id` = :user_id";
-    $ret = $db->fetchOne($queryUser, [':user_id' => $userId], __FILE__);
+if (!$user) {
+    $userCreate = $burger->setUser($_GET['name'], $_GET['email'], $_GET['phone'], $_GET['street'], $_GET['house'], $_GET['frame'], $_GET['apartment'], $_GET['floor']);
+    $user = $burger->getUserByEmail($_GET['email']);
 }
 
-$queryOrderAdd = "INSERT INTO `orders`(`user_id`, `comment`, `payment`, `callback`) 
-VALUES (:order_id, :order_comment, :order_payment, :order_callback)";
-$order = $db->exec($queryOrderAdd, [
-    ':order_id' => $ret['id'] ?? '',
-    ':order_comment' => $_GET['comment'] ?? '',
-    ':order_payment' => $_GET['payment'] ?? null,
-    ':order_callback' => $_GET['callback'] ?? 1,
-], __FILE__);
-
-$queryOrder = "SELECT COUNT(*) as count FROM `orders` WHERE `user_id` = :user_id";
-$orderCount = $db->fetchOne($queryOrder, [':user_id' => $ret['id']], __FILE__);
+$order = $burger->setOrder($user['id'], $_GET['comment'], $_GET['payment'], $_GET['callback']);
+$orderUsers = $burger->listOrderByUser($user['id']);
 
 
 $return = [
-    'name' => $ret['name'],
-    'email' => $ret['email'],
-    'phone' => $ret['phone'],
-    'street' => $ret['street'],
-    'house' => $ret['house'],
-    'frame' => $ret['frame'],
-    'apartment' => $ret['apartment'],
-    'floor' => $ret['floor'],
+    'name' => $user['name'],
+    'email' => $user['email'],
+    'phone' => $user['phone'],
+    'street' => $user['street'],
+    'house' => $user['house'],
+    'frame' => $user['frame'],
+    'apartment' => $user['apartment'],
+    'floor' => $user['floor'],
     'order_id' => $order,
-    'order_count' => $orderCount['count'],
+    'order_count' => $orderUsers['count'],
 ];
 
 echo json_encode($return);
+
